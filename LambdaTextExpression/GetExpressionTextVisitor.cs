@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Dynamitey;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Dynamitey;
 
 namespace LambdaTextExpression
 {
@@ -20,6 +20,14 @@ namespace LambdaTextExpression
         /// The arguments for the expression
         /// </summary>
         protected Dictionary<string, object> Arguments;
+
+        /// <summary>
+        /// TODO: Review the usage of this. It was only added to give test coverage
+        /// to the produced expressions. It must be removed because
+        /// these cannot be serialzied and cannot replace Parameters. Figure out
+        /// how to remove this and keep test coverage.
+        /// </summary>
+        protected Dictionary<string, ParameterExpression> TempParameters;
 
         /// <summary>
         /// Name and type of the parameters in the expression
@@ -43,6 +51,7 @@ namespace LambdaTextExpression
         {
             this.Arguments = new Dictionary<string, object>();
             this.Parameters = new Dictionary<string, string>();
+            this.TempParameters = new Dictionary<string, ParameterExpression>();
 
             ExpressionText result = new ExpressionText();
             var exp = this.VisitExpression(expression, null);
@@ -50,6 +59,7 @@ namespace LambdaTextExpression
             result.InternalExpression = exp.Text;
             result.Arguments = this.Arguments;
             result.Parameters = this.Parameters;
+            result.Parameters2 = this.TempParameters;
             result.ClrType = exp.ClrType?.FullName;
 
             return result;
@@ -70,7 +80,7 @@ namespace LambdaTextExpression
 
                 case ExpressionType.Convert:
 
-                    return this.VisitExpression(((UnaryExpression)exp).Operand, exp);
+                    return this.VisitConvertExpression((UnaryExpression)exp, parentExpression);
 
                 case ExpressionType.Not:
 
@@ -145,6 +155,41 @@ namespace LambdaTextExpression
         /// Visit a lambda expression
         /// </summary>
         /// <param name="exp"></param>
+        /// <param name="parentExpression"></param>
+        /// <returns></returns>
+        protected EToken VisitConvertExpression(UnaryExpression exp, Expression parentExpression)
+        {
+            // Many of these CONVERT expressions are automatically infered by the language itself,
+            // and having them here is too verbose, we need a way to only leave those that are required
+            // by the final expression.
+
+            Expression innerExp = exp;
+
+            Type underlyingType = exp.Type.GetUnderlyingType();
+            bool isNullable = false;
+
+            // Expressions usually have useless implicit cast chains that can be simplified.
+            while (innerExp.NodeType == ExpressionType.Convert && underlyingType == innerExp.Type.GetUnderlyingType())
+            {
+                exp = (UnaryExpression)innerExp;
+                isNullable = exp.Type.IsNullable() || isNullable;
+                innerExp = exp.Operand;
+            }
+
+            string typeConversion = underlyingType.Name;
+            if (isNullable)
+            {
+                typeConversion += "?";
+            }
+
+            var innerExpression = this.VisitExpression(innerExp, exp);
+            return new EToken(typeConversion + "(" + innerExpression.Text + ")", exp.NodeType, underlyingType);
+        }
+
+        /// <summary>
+        /// Visit a lambda expression
+        /// </summary>
+        /// <param name="exp"></param>
         /// <returns></returns>
         protected EToken VisitNotExpression(UnaryExpression exp)
         {
@@ -161,6 +206,7 @@ namespace LambdaTextExpression
         {
             foreach (var p in exp.Parameters)
             {
+                this.TempParameters[p.Name] = p;
                 this.Parameters[p.Name] = p.Name;
             }
 
@@ -201,6 +247,7 @@ namespace LambdaTextExpression
         {
             if (!this.Parameters.ContainsKey(exp.Name))
             {
+                this.TempParameters[exp.Name] = exp;
                 this.Parameters[exp.Name] = exp.Name;
             }
 
@@ -490,6 +537,7 @@ namespace LambdaTextExpression
                     var externalArg = args[x + 1];
 
                     this.Parameters.Remove(expArg.Name);
+                    this.TempParameters.Remove(expArg.Name);
                     result.Text = result.Text.Replace($"[{expArg.Name}]", externalArg.Text);
                 }
 

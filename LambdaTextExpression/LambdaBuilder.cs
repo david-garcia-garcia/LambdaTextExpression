@@ -49,5 +49,21 @@ namespace LambdaTextExpression
         {
             return func;
         }
+
+        /// <summary>
+        /// Create lambda
+        /// </summary>
+        public static Expression<Func<T1, T2, T3, T4, T5, TResult>> Lambda<T1, T2, T3, T4, T5, TResult>(Expression<Func<T1, T2, T3, T4, T5, TResult>> func)
+        {
+            return func;
+        }
+
+        /// <summary>
+        /// Create lambda
+        /// </summary>
+        public static Expression<Func<T1, T2, T3, T4, T5, T6, TResult>> Lambda<T1, T2, T3, T4, T5, T6, TResult>(Expression<Func<T1, T2, T3, T4, T5, T6, TResult>> func)
+        {
+            return func;
+        }
     }
 }

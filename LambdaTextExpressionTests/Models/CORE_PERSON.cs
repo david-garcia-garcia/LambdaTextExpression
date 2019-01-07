@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LambdaTextExpressionTests.Models
@@ -109,5 +110,10 @@ namespace LambdaTextExpressionTests.Models
         [StringLength(30)]
         [Display(Name = "idExternal")]
         public string idExternal { get; set; } // idExternal (length: 20)
+
+        /// <summary>
+        /// FK
+        /// </summary>
+        public CORE_USER CORE_USER { get; set; }
     }
 }

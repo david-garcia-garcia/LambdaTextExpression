@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LambdaTextExpressionTests.Models
@@ -56,6 +58,11 @@ namespace LambdaTextExpressionTests.Models
         [Column(@"deletedAt", Order = 9, TypeName = "bigint")]
         [Display(Name = "deletedAt")]
         public long? deletedAt { get; set; } // deletedAt
+
+        /// <summary>
+        /// Reverse collection
+        /// </summary>
+        public ICollection<CORE_PERSON> CORE_PERSONS { get; set; }
 
         public CORE_USER()
         {

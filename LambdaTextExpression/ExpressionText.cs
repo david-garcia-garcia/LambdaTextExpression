@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace LambdaTextExpression
 {
@@ -69,6 +70,11 @@ namespace LambdaTextExpression
         public Dictionary<string, string> Parameters { get; set; }
 
         /// <summary>
+        /// 
+        /// </summary>
+        public Dictionary<string, ParameterExpression> Parameters2 { get; set; }
+
+        /// <summary>
         /// The result CLR type of the lambda expression call
         /// </summary>
         public string ClrType { get; set; }
@@ -110,9 +116,9 @@ namespace LambdaTextExpression
         }
 
         /// <summary>
-        /// Mergea los parámetros que hay en EXP y los renombra si hay colisiones.
+        /// Merge in the parameters from the incoming exp and renames them if there are any collisions.
         ///
-        /// Devuelve una nueva instancia de EXP con los parámetros sustituidos
+        /// Returns a new instance of exp with the parameters replaced.
         /// </summary>
         /// <param name="exp"></param>
         /// <returns></returns>

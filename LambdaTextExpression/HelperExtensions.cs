@@ -51,5 +51,30 @@ namespace LambdaTextExpression
         {
             return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
+
+        /// <summary>
+        /// Retrieves underlaying value type of the nullable value type.
+        /// </summary>
+        /// <param name="type">The type to inspect.</param>
+        /// <returns>The underlaying value type.</returns>
+        public static Type GetNullableValueType(this Type type)
+        {
+            return type.GetGenericArguments().Single();
+        }
+
+        /// <summary>
+        /// Get the actual or underlying type
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static Type GetUnderlyingType(this Type type)
+        {
+            if (!IsNullable(type))
+            {
+                return type;
+            }
+
+            return GetNullableValueType(type);
+        }
     }
 }
